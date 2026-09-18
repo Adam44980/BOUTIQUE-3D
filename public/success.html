@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Commande Validée !</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md text-center">
+        <div class="w-16 h-16 bg-cyan-500/10 text-cyan-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-cyan-500/20">✓</div>
+        <h1 class="text-2xl font-bold">Paiement Accepté !</h1>
+        <p class="text-slate-400 text-sm mt-2">Votre commande d'impression 3D est validée. L'impression démarre immédiatement.</p>
+        <button onclick="confirmOrder()" class="mt-6 bg-cyan-500 text-slate-950 px-6 py-2.5 rounded-xl font-bold text-xs">Générer mon reçu & Suivi</button>
+    </div>
+
+    <script>
+        async function confirmOrder() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order_id');
+            if (orderId) {
+                const res = await fetch('/api/confirm-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId })
+                });
+                const data = await res.json();
+                alert(`Numéro de suivi expédition généré : ${data.trackingNumber}`);
+                window.location.href = '/';
+            }
+        }
+    </script>
+</body>
+</html>

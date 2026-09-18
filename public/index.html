@@ -1,161 +1,497 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forge3D — Studio & Boutique Impression 3D</title>
-    <!-- CSS Tailwind CDN -->
+    <title>FORGE3D — Studio d'Impression & Accessoires 3D</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7' }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
 
-    <!-- Navbar -->
-    <header class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <i class="fa-solid fa-cube text-cyan-400 text-2xl"></i>
-                <span class="text-xl font-bold tracking-wider text-cyan-400">FORGE 3D</span>
+    <!-- En-tête / Barre de navigation -->
+    <header class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-blue-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-cube text-white text-lg"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-black tracking-tight text-white block leading-none">FORGE<span class="text-brand-400">3D</span></span>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Additive Studio</span>
+                </div>
             </div>
-            
+
             <div class="flex items-center space-x-4">
-                <!-- Bouton Connexion Admin -->
-                <button onclick="toggleAdminModal()" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg border border-slate-700 text-slate-300">
-                    <i class="fa-solid fa-user-shield text-cyan-400 mr-1"></i> Admin
+                <!-- Bouton Accès Admin -->
+                <button onclick="openAdminModal()" class="text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-shield-halved text-brand-400"></i>
+                    <span>Espace Admin</span>
                 </button>
-                
+
                 <!-- Bouton Panier -->
-                <button onclick="toggleCart()" class="relative bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl border border-slate-700">
-                    <i class="fa-solid fa-shopping-bag text-cyan-400"></i>
-                    <span id="cart-count" class="absolute -top-2 -right-2 bg-cyan-500 text-slate-950 font-bold text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                <button onclick="toggleCart()" class="relative p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition">
+                    <i class="fa-solid fa-cart-shopping text-slate-200"></i>
+                    <span id="cart-badge" class="absolute -top-1.5 -right-1.5 bg-brand-500 text-slate-950 font-black text-[11px] w-5 h-5 rounded-full flex items-center justify-center">0</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Content -->
-    <main class="max-w-7xl mx-auto px-6 py-10 flex-1 w-full">
-        <h1 class="text-3xl font-extrabold mb-8 text-white flex items-center gap-3">
-            <i class="fa-solid fa-store text-cyan-400"></i> Catalogue Accessoires Gaming & Pièces 3D
-        </h1>
+    <!-- Bannière Hero -->
+    <section class="border-b border-slate-900 bg-gradient-to-b from-slate-900/40 to-transparent py-12">
+        <div class="max-w-7xl mx-auto px-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20 mb-3">
+                    <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span> Production Locale & Sur-Mesure
+                </span>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Accessoires Gaming & Pièces Techniques 3D</h1>
+                <p class="text-slate-400 text-sm mt-2 max-w-xl">Conception et impression haute précision en matériaux haute résistance (PETG / PLA Pro).</p>
+            </div>
+        </div>
+    </section>
 
-        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Produits chargés via JS -->
-            <div class="p-6 bg-slate-900 rounded-xl border border-slate-800 text-slate-400 text-sm">Chargement des produits...</div>
+    <!-- Catalogue Produits -->
+    <main class="max-w-7xl mx-auto px-6 py-12 flex-1 w-full">
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Injecté en JS -->
         </div>
     </main>
 
-    <!-- Modal Connexion Admin -->
-    <div id="admin-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-6 relative">
-            <button onclick="toggleAdminModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-            
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-lock text-cyan-400"></i> Espace Administrateur</h3>
-            
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Identifiant</label>
-                    <input type="text" id="admin-user" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-cyan-500">
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Mot de passe</label>
-                    <input type="password" id="admin-pass" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-cyan-500">
-                </div>
-                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-lg transition">Connexion</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Panier -->
-    <div id="cart-drawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex justify-end">
-        <div class="w-full max-w-md bg-slate-900 border-l border-slate-800 h-full p-6 flex flex-col justify-between">
+    <!-- Drawer Panier & Finalisation Commande -->
+    <div id="cart-drawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex justify-end">
+        <div class="w-full max-w-md bg-slate-900 border-l border-slate-800 h-full p-6 flex flex-col justify-between overflow-y-auto">
             <div>
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-cyan-400"></i> Ton Panier</h3>
-                    <button onclick="toggleCart()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-6">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-bag-shopping text-brand-400"></i> Votre Commande
+                    </h3>
+                    <button onclick="toggleCart()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
-                <div id="cart-items" class="space-y-3">
-                    <p class="text-xs text-slate-500">Panier vide.</p>
+
+                <div id="cart-items-container" class="space-y-3 mb-6">
+                    <p class="text-xs text-slate-500 text-center py-6">Votre panier est vide.</p>
                 </div>
             </div>
-            <div class="border-t border-slate-800 pt-4">
-                <div class="flex justify-between text-base font-bold mb-4">
-                    <span>Total :</span>
-                    <span id="cart-total" class="text-cyan-400">0.00 €</span>
+
+            <div class="border-t border-slate-800 pt-4 space-y-4">
+                <!-- Choix Transporteur / Exporteur -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">Mode d'expédition / Transporteur</label>
+                    <select id="carrier-select" onchange="updateCartTotal()" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 text-xs outline-none focus:border-brand-500">
+                        <option value="Mondial Relay" data-cost="4.90">Mondial Relay (Point Relais) — 4,90 €</option>
+                        <option value="La Poste Colissimo" data-cost="7.50">La Poste Colissimo (Domicile) — 7,50 €</option>
+                        <option value="Courrier Suivi" data-cost="3.20">Courrier Suivi (Petits objets) — 3,20 €</option>
+                        <option value="Retrait Atelier" data-cost="0.00">Retrait en Atelier (Sainte-Luce) — Gratuit</option>
+                    </select>
                 </div>
-                <button onclick="alert('Module de paiement en cours de finalisation')" class="w-full bg-cyan-500 text-slate-950 font-bold py-3 rounded-xl">Passer la commande</button>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">Adresse e-mail (pour le suivi)</label>
+                    <input type="email" id="customer-email" placeholder="nom@exemple.com" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 text-xs outline-none focus:border-brand-500">
+                </div>
+
+                <div class="space-y-1.5 text-xs pt-2">
+                    <div class="flex justify-between text-slate-400"><span>Sous-total :</span><span id="subtotal-val">0,00 €</span></div>
+                    <div class="flex justify-between text-slate-400"><span>Frais de port :</span><span id="shipping-val">4,90 €</span></div>
+                    <div class="flex justify-between text-base font-extrabold text-white pt-2 border-t border-slate-800">
+                        <span>Total TTC :</span>
+                        <span id="total-val" class="text-brand-400">4,90 €</span>
+                    </div>
+                </div>
+
+                <button onclick="processCheckout()" id="pay-button" class="w-full bg-brand-500 hover:bg-brand-400 text-slate-950 font-black py-4 rounded-xl transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Commander & Payer via Stripe</span>
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL ADMINISTRATEUR COMPLET -->
+    <div id="admin-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-2xl p-6 relative max-h-[92vh] overflow-y-auto">
+            <button onclick="closeAdminModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+
+            <!-- 1. Écran de Connexion Admin -->
+            <div id="admin-login-view" class="max-w-md mx-auto py-8">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                        <i class="fa-solid fa-shield-cat"></i>
+                    </div>
+                    <h2 class="text-xl font-black text-white">Connexion Administration</h2>
+                    <p class="text-xs text-slate-400 mt-1">Accès réservé au gestionnaire de la boutique.</p>
+                </div>
+
+                <form onsubmit="loginAdmin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Identifiant</label>
+                        <input type="text" id="admin-user" value="admin" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Mot de passe</label>
+                        <input type="password" id="admin-pass" value="admin123" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none focus:border-brand-500">
+                    </div>
+                    <button type="submit" class="w-full bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold py-3 rounded-xl transition text-xs">Accéder au Back-Office</button>
+                </form>
+            </div>
+
+            <!-- 2. Tableau de Bord Admin (Back-Office) -->
+            <div id="admin-dashboard-view" class="hidden space-y-8">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-black text-white flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-brand-400"></i> Back-Office Backstage
+                        </h2>
+                        <p class="text-xs text-slate-400">Gestion en temps réel du catalogue et des commandes clients.</p>
+                    </div>
+                    <button onclick="logoutAdmin()" class="text-xs bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 border border-slate-700 text-slate-300 px-3.5 py-2 rounded-xl transition">
+                        <i class="fa-solid fa-power-off mr-1"></i> Déconnexion
+                    </button>
+                </div>
+
+                <!-- Métriques clés -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <span class="text-slate-500 text-xs font-bold block mb-1">Chiffre d'Affaires</span>
+                        <span id="stat-revenue" class="text-2xl font-black text-brand-400">0,00 €</span>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <span class="text-slate-500 text-xs font-bold block mb-1">Commandes Réalisées</span>
+                        <span id="stat-orders-count" class="text-2xl font-black text-white">0</span>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <span class="text-slate-500 text-xs font-bold block mb-1">Articles en Catalogue</span>
+                        <span id="stat-products-count" class="text-2xl font-black text-white">0</span>
+                    </div>
+                </div>
+
+                <!-- Formulaire d'ajout de produit -->
+                <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-brand-400"></i> Ajouter une référence au catalogue
+                    </h3>
+                    <form onsubmit="handleAddProduct(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <input type="text" id="add-title" placeholder="Titre de l'article" required class="bg-slate-900 border border-slate-800 p-3 rounded-xl outline-none text-white focus:border-brand-500">
+                        <input type="number" step="0.01" id="add-price" placeholder="Prix (€)" required class="bg-slate-900 border border-slate-800 p-3 rounded-xl outline-none text-white focus:border-brand-500">
+                        <input type="number" id="add-stock" placeholder="Stock" required value="10" class="bg-slate-900 border border-slate-800 p-3 rounded-xl outline-none text-white focus:border-brand-500">
+                        <input type="url" id="add-image" placeholder="URL Image (ex: Unsplash)" required class="bg-slate-900 border border-slate-800 p-3 rounded-xl outline-none text-white focus:border-brand-500 md:col-span-3">
+                        <textarea id="add-desc" placeholder="Description technique..." required class="bg-slate-900 border border-slate-800 p-3 rounded-xl outline-none text-white focus:border-brand-500 md:col-span-3 h-20"></textarea>
+                        <button type="submit" class="bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold p-3 rounded-xl md:col-span-3 transition">+ Enregistrer l'article</button>
+                    </form>
+                </div>
+
+                <!-- Liste des Commandes Reçues -->
+                <div>
+                    <h3 class="font-bold text-sm text-white mb-3">Historique des Commandes</h3>
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-900 text-slate-400 border-b border-slate-800">
+                                <tr>
+                                    <th class="p-3.5">#ID</th>
+                                    <th class="p-3.5">Client</th>
+                                    <th class="p-3.5">Articles</th>
+                                    <th class="p-3.5">Livraison</th>
+                                    <th class="p-3.5">Total</th>
+                                    <th class="p-3.5">Statut</th>
+                                    <th class="p-3.5">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-orders-table" class="divide-y divide-slate-800 text-slate-300">
+                                <!-- Injecté en JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Liste des Produits en Stock (avec suppression) -->
+                <div>
+                    <h3 class="font-bold text-sm text-white mb-3">Catalogue Produits en Stock</h3>
+                    <div id="admin-products-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <!-- Injecté en JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Client -->
     <script>
+        let products = [];
         let cart = [];
+        let adminToken = localStorage.getItem('forge3d_admin_token') || null;
 
-        function toggleAdminModal() {
-            document.getElementById('admin-modal').classList.toggle('hidden');
+        function toggleCart() { document.getElementById('cart-drawer').classList.toggle('hidden'); }
+        function openAdminModal() { 
+            document.getElementById('admin-modal').classList.remove('hidden'); 
+            if (adminToken) {
+                showAdminDashboard();
+            }
         }
+        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
 
-        function toggleCart() {
-            document.getElementById('cart-drawer').classList.toggle('hidden');
-        }
-
-        async function loadProducts() {
+        async function fetchProducts() {
             try {
                 const res = await fetch('/api/products');
-                const products = await res.json();
-                
-                const grid = document.getElementById('product-grid');
-                if (products.length === 0) {
-                    grid.innerHTML = `<p class="text-slate-400">Aucun produit en base.</p>`;
-                    return;
-                }
-
-                grid.innerHTML = products.map(p => `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden p-4 flex flex-col justify-between">
-                        <img src="${p.image}" alt="${p.title}" class="w-full h-40 object-cover rounded-lg mb-3">
-                        <h3 class="font-bold text-white text-sm">${p.title}</h3>
-                        <p class="text-xs text-slate-400 mt-1 mb-4">${p.description}</p>
-                        <div class="flex items-center justify-between mt-auto">
-                            <span class="text-cyan-400 font-extrabold text-lg">${p.price.toFixed(2)} €</span>
-                            <button onclick="addToCart('${p.title}', ${p.price})" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs px-3 py-2 rounded-lg text-white">+ Ajouter</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (err) {
-                console.error("Erreur de chargement:", err);
+                products = await res.json();
+                renderProducts();
+            } catch (e) {
+                console.error("Erreur chargement produits:", e);
             }
         }
 
-        function addToCart(title, price) {
-            cart.push({ title, price });
-            document.getElementById('cart-count').innerText = cart.length;
-            
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            document.getElementById('cart-total').innerText = total.toFixed(2) + ' €';
-            
-            const container = document.getElementById('cart-items');
-            container.innerHTML = cart.map(item => `
-                <div class="flex justify-between items-center bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs">
-                    <span class="text-slate-200">${item.title}</span>
-                    <span class="text-cyan-400 font-bold">${item.price.toFixed(2)} €</span>
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            if (products.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-center text-slate-500 text-sm">Aucun produit disponible.</p>`;
+                return;
+            }
+
+            grid.innerHTML = products.map(p => `
+                <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+                    <div>
+                        <img src="${p.image}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-4 bg-slate-950">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-brand-400 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-md">${p.category || 'Gaming'}</span>
+                        <h3 class="font-bold text-white text-base mt-2">${p.title}</h3>
+                        <p class="text-xs text-slate-400 mt-1 line-clamp-2">${p.description}</p>
+                    </div>
+                    <div class="flex items-center justify-between mt-6 pt-3 border-t border-slate-800">
+                        <span class="text-brand-400 font-black text-lg">${p.price.toFixed(2)} €</span>
+                        <button onclick="addToCart(${p.id})" class="bg-slate-800 hover:bg-brand-500 hover:text-slate-950 border border-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl transition">
+                            + Ajouter
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('admin-user').value;
-            const p = document.getElementById('admin-pass').value;
-
-            if (u === 'admin' && p === 'admin123') {
-                alert('Connexion réussie ! Redirection vers le panneau d\'administration.');
-                toggleAdminModal();
-            } else {
-                alert('Identifiants incorrects.');
+        function addToCart(id) {
+            const prod = products.find(p => p.id === id);
+            if (prod) {
+                cart.push(prod);
+                updateCartTotal();
+                toggleCart();
             }
         }
 
-        loadProducts();
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartTotal();
+        }
+
+        function updateCartTotal() {
+            document.getElementById('cart-badge').innerText = cart.length;
+            const container = document.getElementById('cart-items-container');
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Votre panier est vide.</p>`;
+            } else {
+                container.innerHTML = cart.map((item, idx) => `
+                    <div class="flex justify-between items-center bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs">
+                        <div>
+                            <div class="font-bold text-white">${item.title}</div>
+                            <div class="text-brand-400 font-extrabold mt-0.5">${item.price.toFixed(2)} €</div>
+                        </div>
+                        <button onclick="removeFromCart(${idx})" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `).join('');
+            }
+
+            const select = document.getElementById('carrier-select');
+            const shippingCost = parseFloat(select.options[select.selectedIndex].getAttribute('data-cost'));
+            const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+            const total = subtotal + (cart.length > 0 ? shippingCost : 0);
+
+            document.getElementById('subtotal-val').innerText = subtotal.toFixed(2) + ' €';
+            document.getElementById('shipping-val').innerText = (cart.length > 0 ? shippingCost.toFixed(2) : '0,00') + ' €';
+            document.getElementById('total-val').innerText = total.toFixed(2) + ' €';
+        }
+
+        async function processCheckout() {
+            if (cart.length === 0) return alert("Votre panier est vide.");
+            const email = document.getElementById('customer-email').value;
+            if (!email) return alert("Veuillez renseigner votre e-mail.");
+
+            const btn = document.getElementById('pay-button');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Redirection...`;
+
+            const select = document.getElementById('carrier-select');
+            const carrier = select.value;
+            const shippingCost = parseFloat(select.options[select.selectedIndex].getAttribute('data-cost'));
+
+            try {
+                const res = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: cart, customerEmail: email, carrier, shippingCost })
+                });
+
+                const data = await res.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert("Erreur Stripe: " + (data.error || "Paiement impossible"));
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                alert("Erreur serveur.");
+                btn.disabled = false;
+            }
+        }
+
+        // BACK-OFFICE ADMIN
+        async function loginAdmin(e) {
+            e.preventDefault();
+            const username = document.getElementById('admin-user').value;
+            const password = document.getElementById('admin-pass').value;
+
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                adminToken = data.token;
+                localStorage.setItem('forge3d_admin_token', adminToken);
+                showAdminDashboard();
+            } else {
+                alert(data.error || "Identifiants invalides.");
+            }
+        }
+
+        function logoutAdmin() {
+            adminToken = null;
+            localStorage.removeItem('forge3d_admin_token');
+            document.getElementById('admin-login-view').classList.remove('hidden');
+            document.getElementById('admin-dashboard-view').classList.add('hidden');
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('admin-login-view').classList.add('hidden');
+            document.getElementById('admin-dashboard-view').classList.remove('hidden');
+            loadAdminData();
+        }
+
+        async function loadAdminData() {
+            if (!adminToken) return;
+
+            // Récupérer les commandes
+            const resOrders = await fetch('/api/admin/orders', {
+                headers: { 'Authorization': `Bearer ${adminToken}` }
+            });
+            const orders = await resOrders.json();
+
+            // Stats
+            const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+            document.getElementById('stat-revenue').innerText = totalRevenue.toFixed(2) + ' €';
+            document.getElementById('stat-orders-count').innerText = orders.length;
+            document.getElementById('stat-products-count').innerText = products.length;
+
+            // Tableau des commandes
+            const table = document.getElementById('admin-orders-table');
+            if (orders.length === 0) {
+                table.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Aucune commande.</td></tr>`;
+            } else {
+                table.innerHTML = orders.map(o => `
+                    <tr>
+                        <td class="p-3.5 font-bold">#${o.id}</td>
+                        <td class="p-3.5"><b>${o.customer_email}</b></td>
+                        <td class="p-3.5">${o.items.map(i => i.title).join(', ')}</td>
+                        <td class="p-3.5">${o.carrier}</td>
+                        <td class="p-3.5 font-bold text-brand-400">${o.total.toFixed(2)} €</td>
+                        <td class="p-3.5"><span class="bg-brand-500/10 text-brand-400 px-2 py-0.5 rounded border border-brand-500/20">${o.status}</span></td>
+                        <td class="p-3.5">
+                            <select onchange="updateOrderStatus(${o.id}, this.value)" class="bg-slate-900 border border-slate-800 rounded p-1 text-[11px]">
+                                <option value="En Impression">En Impression</option>
+                                <option value="Expédiée">Expédiée</option>
+                                <option value="Livrée">Livrée</option>
+                            </select>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Liste des produits
+            const prodList = document.getElementById('admin-products-list');
+            prodList.innerHTML = products.map(p => `
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-white">${p.title}</div>
+                        <div class="text-brand-400">${p.price.toFixed(2)} € (Stock: ${p.stock})</div>
+                    </div>
+                    <button onclick="deleteProduct(${p.id})" class="text-rose-400 p-2 hover:bg-rose-500/10 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        async function updateOrderStatus(id, status) {
+            await fetch(`/api/admin/orders/${id}`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${adminToken}`
+                },
+                body: JSON.stringify({ status })
+            });
+            loadAdminData();
+        }
+
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            const title = document.getElementById('add-title').value;
+            const price = document.getElementById('add-price').value;
+            const stock = document.getElementById('add-stock').value;
+            const image = document.getElementById('add-image').value;
+            const description = document.getElementById('add-desc').value;
+
+            await fetch('/api/admin/products', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${adminToken}`
+                },
+                body: JSON.stringify({ title, price, stock, image, description })
+            });
+
+            e.target.reset();
+            fetchProducts();
+            loadAdminData();
+            alert("Produit ajouté au catalogue !");
+        }
+
+        async function deleteProduct(id) {
+            if (confirm("Supprimer définitivement cet article ?")) {
+                await fetch(`/api/admin/products/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                fetchProducts();
+                loadAdminData();
+            }
+        }
+
+        fetchProducts();
     </script>
 </body>
 </html>

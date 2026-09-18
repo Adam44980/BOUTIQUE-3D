@@ -3,38 +3,31 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const session = require('express-session');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_51MockKeyStripeHere'; 
+const JWT_SECRET = process.env.JWT_SECRET || 'forge3d_super_secret_jwt_key_2026';
+const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
 const stripe = require('stripe')(stripeKey);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Configuration Session Admin
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'forge3d-secret-session-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 heures
-}));
+const PORT = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Base de données SQLite
-const db = new sqlite3.Database('./boutique_3d.db', (err) => {
+// Base de Données SQLite
+const db = new sqlite3.Database('./boutique.db', (err) => {
     if (!err) {
-        console.log('Base de données SQLite connectée.');
+        console.log("Connecté à la base SQLite.");
         initDb();
     }
 });
 
 function initDb() {
     db.serialize(() => {
-        // Table Utilisateurs Admin
+        // Table Admin
         db.run(`CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE,
@@ -44,104 +37,87 @@ function initDb() {
         // Table Produits
         db.run(`CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            category TEXT,
-            price REAL,
+            title TEXT NOT NULL,
+            description TEXT,
+            price REAL NOT NULL,
             stock INTEGER DEFAULT 10,
             image TEXT,
-            description TEXT
+            category TEXT DEFAULT 'Accessoires Gaming'
         )`);
 
         // Table Commandes
         db.run(`CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_name TEXT,
-            email TEXT,
-            address TEXT,
-            country TEXT,
-            carrier TEXT,
-            items TEXT,
-            total REAL,
-            shipping_label TEXT,
-            tracking_number TEXT,
-            status TEXT DEFAULT 'En attente d impression',
+            customer_email TEXT NOT NULL,
+            carrier TEXT NOT NULL,
+            items TEXT NOT NULL,
+            subtotal REAL NOT NULL,
+            shipping_cost REAL NOT NULL,
+            total REAL NOT NULL,
+            status TEXT DEFAULT 'Payée - À Imprimer',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // Compte Admin par défaut (Login: admin / MDP: admin123)
+        // Admin par défaut (admin / admin123)
         db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
             if (row && row.count === 0) {
                 const hash = bcrypt.hashSync('admin123', 10);
                 db.run("INSERT INTO users (username, password) VALUES (?, ?)", ['admin', hash]);
-                console.log("Compte Administrateur initialisé -> Login: admin / MDP: admin123");
+                console.log("Compte Administrateur configuré (admin / admin123)");
             }
         });
 
-        // Produits de démo
+        // Produits de démonstration
         db.get("SELECT COUNT(*) as count FROM products", (err, row) => {
             if (row && row.count === 0) {
-                const stmt = db.prepare("INSERT INTO products (title, category, price, stock, image, description) VALUES (?, ?, ?, ?, ?, ?)");
-                stmt.run("Support Manette PS5 / Xbox Articulé", "gaming", 14.90, 20, "https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=500", "Support haute résistance imprimé en PETG.");
-                stmt.run("Accroche-Casque Sous-Bureau", "gaming", 9.90, 30, "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500", "Fixation robuste avec passe-câble.");
-                stmt.run("Support Modulaire Sim-Racing", "simracing", 24.90, 10, "https://images.unsplash.com/photo-1547394765-185e1e68f34e?w=500", "Adaptateur cockpit rigide pour volant/pédalier.");
+                const stmt = db.prepare("INSERT INTO products (title, description, price, stock, image, category) VALUES (?, ?, ?, ?, ?, ?)");
+                stmt.run("Support Double Manette PS5 / Xbox", "Support ergonomique de haute précision imprimé en PETG haute résistance.", 18.90, 20, "https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=800", "Gaming");
+                stmt.run("Support de Casque Sous-Bureau", "Système d'accroche épuré avec passe-câble intégré.", 11.50, 35, "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800", "Gaming");
+                stmt.run("Support Volant Sim-Racing Rigide", "Adaptateur renforcé pour cockpit sim-racing et volant Logitech/Thrustmaster.", 29.90, 12, "https://images.unsplash.com/photo-1547394765-185e1e68f34e?w=800", "SimRacing");
                 stmt.finalize();
             }
         });
     });
 }
 
-// Middleware d'accès sécurisé Admin
-function requireAdmin(req, res, next) {
-    if (req.session && req.session.isAdmin) return next();
-    return res.status(401).json({ error: "Accès non autorisé" });
+// Middleware Authentification Admin via JWT
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Accès refusé. Token manquant." });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: "Token invalide ou expiré." });
+        req.user = user;
+        next();
+    });
 }
 
 // ==========================================
-// ROUTES CLIENT & EXPÉDITION INTERNATIONALE
+// ROUTES PUBLIQUES (CLIENT)
 // ==========================================
 
+// Liste des produits
 app.get('/api/products', (req, res) => {
-    db.all("SELECT * FROM products", [], (err, rows) => {
+    db.all("SELECT * FROM products ORDER BY id DESC", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-// Calculateur de frais de port selon le pays
-app.post('/api/calculate-shipping', (req, res) => {
-    const { country, carrier } = req.body;
-    let cost = 4.90; // Tarif national de base (France / Mondial Relay)
-
-    if (country !== 'FR') {
-        if (carrier === 'DHL_EXPRESS') cost = 19.90; // International Express
-        else if (carrier === 'FEDEX_INT') cost = 24.90; // USA / Asie
-        else cost = 12.90; // Europe Standard Colissimo
-    } else {
-        if (carrier === 'COLISSIMO_FR') cost = 6.90;
-        if (carrier === 'CHRONOPOST_13') cost = 11.90;
-    }
-
-    res.json({ cost });
-});
-
-// Création de Session de Paiement Stripe Réelle
+// Créer session Stripe Checkout
 app.post('/api/create-checkout-session', async (req, res) => {
     try {
-        const { items, customerEmail, customerName, address, country, carrier } = req.body;
+        const { items, customerEmail, carrier, shippingCost } = req.body;
 
-        // Calcul des frais de port
-        let shippingCost = 4.90;
-        if (country !== 'FR') {
-            shippingCost = (carrier === 'DHL_EXPRESS') ? 19.90 : 12.90;
-        } else {
-            if (carrier === 'COLISSIMO_FR') shippingCost = 6.90;
-            if (carrier === 'CHRONOPOST_13') shippingCost = 11.90;
+        if (!items || items.length === 0) {
+            return res.status(400).json({ error: "Panier vide." });
         }
 
         const lineItems = items.map(item => ({
             price_data: {
                 currency: 'eur',
-                product_data: { name: `${item.title} (Couleur: ${item.color || 'Noir'})` },
+                product_data: { name: item.title },
                 unit_amount: Math.round(item.price * 100),
             },
             quantity: 1,
@@ -150,83 +126,66 @@ app.post('/api/create-checkout-session', async (req, res) => {
         lineItems.push({
             price_data: {
                 currency: 'eur',
-                product_data: { name: `Frais d'Expédition (${carrier} - ${country})` },
+                product_data: { name: `Livraison (${carrier})` },
                 unit_amount: Math.round(shippingCost * 100),
             },
             quantity: 1,
         });
 
-        const domainURL = process.env.URL_SITE || `http://localhost:${PORT}`;
-        const total = items.reduce((sum, i) => sum + i.price, 0) + shippingCost;
+        const domainURL = process.env.URL_SITE || `https://${req.get('host')}`;
 
-        const stmt = db.prepare("INSERT INTO orders (customer_name, email, address, country, carrier, items, total, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        stmt.run(customerName, customerEmail, address, country, carrier, JSON.stringify(items), total, 'En attente de paiement', function(err) {
-            if (err) return res.status(500).json({ error: err.message });
-            const orderId = this.lastID;
-
-            stripe.checkout.sessions.create({
-                payment_method_types: ['card'],
-                customer_email: customerEmail,
-                line_items: lineItems,
-                mode: 'payment',
-                success_url: `${domainURL}/success.html?order_id=${orderId}`,
-                cancel_url: `${domainURL}/index.html?canceled=true`,
-            }).then(session => {
-                res.json({ url: session.url });
-            });
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            customer_email: customerEmail,
+            line_items: lineItems,
+            mode: 'payment',
+            success_url: `${domainURL}/?payment=success`,
+            cancel_url: `${domainURL}/?payment=cancel`,
         });
-        stmt.finalize();
 
+        // Enregistrer la commande
+        const subtotal = items.reduce((sum, i) => sum + i.price, 0);
+        const total = subtotal + shippingCost;
+
+        db.run(
+            "INSERT INTO orders (customer_email, carrier, items, subtotal, shipping_cost, total) VALUES (?, ?, ?, ?, ?, ?)",
+            [customerEmail, carrier, JSON.stringify(items), subtotal, shippingCost, total]
+        );
+
+        res.json({ url: session.url });
     } catch (error) {
+        console.error("Erreur Stripe:", error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Confirmation de Commande
-app.post('/api/confirm-order', (req, res) => {
-    const { orderId } = req.body;
-    const tracking = `TRACK-INT-${Math.floor(100000000 + Math.random() * 900000000)}`;
-    const labelUrl = `/api/admin/download-label/${orderId}`;
-
-    db.run("UPDATE orders SET status = 'Payée - À Imprimer', tracking_number = ?, shipping_label = ? WHERE id = ?", 
-        [tracking, labelUrl, orderId], function(err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ success: true, trackingNumber: tracking, labelUrl });
-    });
-});
-
 // ==========================================
-// ROUTES ADMIN & BORDEREAUX D'EXPÉDITION
+// ROUTES ADMINISTRATEUR (SECTEUR PRO)
 // ==========================================
 
+// Connexion Admin
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
     db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
         if (user && bcrypt.compareSync(password, user.password)) {
-            req.session.isAdmin = true;
-            return res.json({ success: true });
+            const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
+            return res.json({ success: true, token });
         }
-        res.status(401).json({ success: false, message: "Identifiants incorrects" });
+        res.status(401).json({ error: "Identifiants incorrects" });
     });
 });
 
-app.post('/api/admin/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ success: true });
-});
-
-app.get('/api/admin/check', (req, res) => {
-    res.json({ isAdmin: !!(req.session && req.session.isAdmin) });
-});
-
-app.get('/api/admin/orders', requireAdmin, (req, res) => {
-    db.all("SELECT * FROM orders ORDER BY id DESC", [], (err, rows) => {
+// Obtenir toutes les commandes (Admin)
+app.get('/api/admin/orders', authenticateToken, (req, res) => {
+    db.all("SELECT * FROM orders ORDER BY created_at DESC", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(rows.map(r => ({ ...r, items: JSON.parse(r.items || '[]') })));
+        const orders = rows.map(o => ({ ...o, items: JSON.parse(o.items || '[]') }));
+        res.json(orders);
     });
 });
 
-app.put('/api/admin/orders/:id', requireAdmin, (req, res) => {
+// Modifier le statut d'une commande
+app.put('/api/admin/orders/:id', authenticateToken, (req, res) => {
     const { status } = req.body;
     db.run("UPDATE orders SET status = ? WHERE id = ?", [status, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
@@ -234,17 +193,21 @@ app.put('/api/admin/orders/:id', requireAdmin, (req, res) => {
     });
 });
 
-app.post('/api/admin/products', requireAdmin, (req, res) => {
-    const { title, category, price, stock, image, description } = req.body;
-    const stmt = db.prepare("INSERT INTO products (title, category, price, stock, image, description) VALUES (?, ?, ?, ?, ?, ?)");
-    stmt.run(title, category, parseFloat(price), parseInt(stock), image, description, function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ success: true, id: this.lastID });
-    });
-    stmt.finalize();
+// Ajouter un produit (Admin)
+app.post('/api/admin/products', authenticateToken, (req, res) => {
+    const { title, description, price, stock, image, category } = req.body;
+    db.run(
+        "INSERT INTO products (title, description, price, stock, image, category) VALUES (?, ?, ?, ?, ?, ?)",
+        [title, description, parseFloat(price), parseInt(stock), image, category || 'Gaming'],
+        function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true, id: this.lastID });
+        }
+    );
 });
 
-app.delete('/api/admin/products/:id', requireAdmin, (req, res) => {
+// Supprimer un produit (Admin)
+app.delete('/api/admin/products/:id', authenticateToken, (req, res) => {
     db.run("DELETE FROM products WHERE id = ?", [req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true });
@@ -252,5 +215,5 @@ app.delete('/api/admin/products/:id', requireAdmin, (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Serveur Forge3D actif sur http://localhost:${PORT}`);
+    console.log(`Serveur Forge3D Pro actif sur le port ${PORT}`);
 });

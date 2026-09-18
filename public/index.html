@@ -3,166 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forge3D — International 3D Print & Gaming Store</title>
+    <title>Forge3D — Studio & Boutique Impression 3D</title>
+    <!-- CSS Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
 
-    <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-40">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-black text-cyan-400 tracking-wider"><i class="fa-solid fa-cube mr-2"></i>FORGE 3D</h1>
-            <button onclick="toggleCart()" class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 relative">
-                <i class="fa-solid fa-cart-shopping text-cyan-400"></i>
-                <span id="cart-count" class="absolute -top-2 -right-2 bg-cyan-500 text-slate-950 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
-            </button>
+    <!-- Navbar -->
+    <header class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-cube text-cyan-400 text-2xl"></i>
+                <span class="text-xl font-bold tracking-wider text-cyan-400">FORGE 3D</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Bouton Connexion Admin -->
+                <button onclick="toggleAdminModal()" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg border border-slate-700 text-slate-300">
+                    <i class="fa-solid fa-user-shield text-cyan-400 mr-1"></i> Admin
+                </button>
+                
+                <!-- Bouton Panier -->
+                <button onclick="toggleCart()" class="relative bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl border border-slate-700">
+                    <i class="fa-solid fa-shopping-bag text-cyan-400"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-cyan-500 text-slate-950 font-bold text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                </button>
+            </div>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto p-4 py-8 flex-1 w-full">
-        <h2 class="text-2xl font-bold mb-6">Catalogue Accessoires Gaming & Pièces 3D</h2>
-        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+    <!-- Content -->
+    <main class="max-w-7xl mx-auto px-6 py-10 flex-1 w-full">
+        <h1 class="text-3xl font-extrabold mb-8 text-white flex items-center gap-3">
+            <i class="fa-solid fa-store text-cyan-400"></i> Catalogue Accessoires Gaming & Pièces 3D
+        </h1>
+
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Produits chargés via JS -->
+            <div class="p-6 bg-slate-900 rounded-xl border border-slate-800 text-slate-400 text-sm">Chargement des produits...</div>
+        </div>
     </main>
 
-    <!-- Drawer Panier / Shipping International -->
-    <div id="cart-drawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex justify-end z-50">
-        <div class="w-full max-w-md bg-slate-900 p-6 flex flex-col justify-between h-full border-l border-slate-800 overflow-y-auto">
+    <!-- Modal Connexion Admin -->
+    <div id="admin-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-6 relative">
+            <button onclick="toggleAdminModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            
+            <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-lock text-cyan-400"></i> Espace Administrateur</h3>
+            
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Identifiant</label>
+                    <input type="text" id="admin-user" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Mot de passe</label>
+                    <input type="password" id="admin-pass" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-cyan-500">
+                </div>
+                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-lg transition">Connexion</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Panier -->
+    <div id="cart-drawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex justify-end">
+        <div class="w-full max-w-md bg-slate-900 border-l border-slate-800 h-full p-6 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-bold text-lg"><i class="fa-solid fa-earth-americas text-cyan-400 mr-2"></i> Panier & Expédition</h3>
-                    <button onclick="toggleCart()" class="text-slate-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-cyan-400"></i> Ton Panier</h3>
+                    <button onclick="toggleCart()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div id="cart-items" class="space-y-3"></div>
+                <div id="cart-items" class="space-y-3">
+                    <p class="text-xs text-slate-500">Panier vide.</p>
+                </div>
             </div>
-
-            <div class="border-t border-slate-800 pt-4 mt-6">
-                <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Sous-total :</span><span id="subtotal">0.00 €</span></div>
-                <div class="flex justify-between text-xs mb-3"><span class="text-slate-400">Frais de port :</span><span id="shipping-cost" class="text-cyan-400">4.90 €</span></div>
-                <div class="flex justify-between font-bold text-base mb-4"><span>Total final :</span><span id="cart-total" class="text-cyan-400">4.90 €</span></div>
-
-                <form onsubmit="startStripePayment(event)" class="space-y-3">
-                    <input type="text" id="cust-name" placeholder="Nom Complet" required class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-lg text-xs outline-none focus:border-cyan-500">
-                    <input type="email" id="cust-email" placeholder="Adresse Email" required class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-lg text-xs outline-none focus:border-cyan-500">
-                    <input type="text" id="cust-address" placeholder="Adresse complète de livraison" required class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-lg text-xs outline-none focus:border-cyan-500">
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1">Pays</label>
-                            <select id="cust-country" onchange="updateShippingCost()" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-lg text-xs outline-none">
-                                <option value="FR">France 🇫🇷</option>
-                                <option value="BE">Belgique 🇧🇪</option>
-                                <option value="CH">Suisse 🇨🇭</option>
-                                <option value="DE">Allemagne 🇩🇪</option>
-                                <option value="US">États-Unis 🇺🇸</option>
-                                <option value="CA">Canada 🇨🇦</option>
-                                <option value="WORLD">Reste du Monde 🌍</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1">Transporteur</label>
-                            <select id="cust-carrier" onchange="updateShippingCost()" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-lg text-xs outline-none">
-                                <option value="MONDIAL_RELAY">Mondial Relay (Point Relais)</option>
-                                <option value="COLISSIMO_FR">Colissimo Domicile</option>
-                                <option value="DHL_EXPRESS">DHL Express International</option>
-                                <option value="FEDEX_INT">FedEx International</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="pay-btn" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black py-3 rounded-xl transition mt-2">
-                        <i class="fa-solid fa-lock mr-2"></i> Payer par Carte / Apple Pay
-                    </button>
-                </form>
+            <div class="border-t border-slate-800 pt-4">
+                <div class="flex justify-between text-base font-bold mb-4">
+                    <span>Total :</span>
+                    <span id="cart-total" class="text-cyan-400">0.00 €</span>
+                </div>
+                <button onclick="alert('Module de paiement en cours de finalisation')" class="w-full bg-cyan-500 text-slate-950 font-bold py-3 rounded-xl">Passer la commande</button>
             </div>
         </div>
     </div>
 
     <script>
         let cart = [];
-        const colors = ['Noir', 'Gris', 'Blanc', 'Bleu', 'Rouge', 'Jaune'];
+
+        function toggleAdminModal() {
+            document.getElementById('admin-modal').classList.toggle('hidden');
+        }
+
+        function toggleCart() {
+            document.getElementById('cart-drawer').classList.toggle('hidden');
+        }
 
         async function loadProducts() {
-            const res = await fetch('/api/products');
-            const products = await res.json();
-            document.getElementById('product-grid').innerHTML = products.map(p => `
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
-                    <div>
-                        <img src="${p.image}" class="rounded-lg h-44 w-full object-cover mb-3">
-                        <h3 class="font-bold text-sm">${p.title}</h3>
-                        <p class="text-xs text-slate-400 mt-1">${p.description}</p>
-                        
-                        <label class="block text-xs text-slate-400 mt-3 mb-1">Couleur Filament (PLA) :</label>
-                        <select id="color-${p.id}" class="w-full bg-slate-950 border border-slate-800 p-2 rounded text-xs">
-                            ${colors.map(c => `<option value="${c}">${c}</option>`).join('')}
-                        </select>
+            try {
+                const res = await fetch('/api/products');
+                const products = await res.json();
+                
+                const grid = document.getElementById('product-grid');
+                if (products.length === 0) {
+                    grid.innerHTML = `<p class="text-slate-400">Aucun produit en base.</p>`;
+                    return;
+                }
+
+                grid.innerHTML = products.map(p => `
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden p-4 flex flex-col justify-between">
+                        <img src="${p.image}" alt="${p.title}" class="w-full h-40 object-cover rounded-lg mb-3">
+                        <h3 class="font-bold text-white text-sm">${p.title}</h3>
+                        <p class="text-xs text-slate-400 mt-1 mb-4">${p.description}</p>
+                        <div class="flex items-center justify-between mt-auto">
+                            <span class="text-cyan-400 font-extrabold text-lg">${p.price.toFixed(2)} €</span>
+                            <button onclick="addToCart('${p.title}', ${p.price})" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs px-3 py-2 rounded-lg text-white">+ Ajouter</button>
+                        </div>
                     </div>
-                    <div class="mt-4 flex justify-between items-center border-t border-slate-800 pt-3">
-                        <span class="text-lg font-bold text-cyan-400">${p.price.toFixed(2)} €</span>
-                        <button onclick="addToCart('${p.title}', ${p.price}, ${p.id})" class="bg-cyan-500 text-slate-950 px-3 py-1.5 text-xs font-bold rounded-lg">+ Panier</button>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (err) {
+                console.error("Erreur de chargement:", err);
+            }
         }
 
-        function toggleCart() { document.getElementById('cart-drawer').classList.toggle('hidden'); }
-
-        function addToCart(title, price, id) {
-            const color = document.getElementById(`color-${id}`).value;
-            cart.push({ title, price, color });
-            updateUI();
-            toggleCart();
-        }
-
-        async function updateShippingCost() {
-            const country = document.getElementById('cust-country').value;
-            const carrier = document.getElementById('cust-carrier').value;
-            
-            const res = await fetch('/api/calculate-shipping', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ country, carrier })
-            });
-            const data = await res.json();
-            
-            document.getElementById('shipping-cost').innerText = data.cost.toFixed(2) + ' €';
-            const subtotal = cart.reduce((a, b) => a + b.price, 0);
-            document.getElementById('cart-total').innerText = (subtotal + data.cost).toFixed(2) + ' €';
-        }
-
-        function updateUI() {
+        function addToCart(title, price) {
+            cart.push({ title, price });
             document.getElementById('cart-count').innerText = cart.length;
+            
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('cart-total').innerText = total.toFixed(2) + ' €';
+            
             const container = document.getElementById('cart-items');
-            container.innerHTML = cart.map((item, idx) => `
+            container.innerHTML = cart.map(item => `
                 <div class="flex justify-between items-center bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs">
-                    <div><b>${item.title}</b> <span class="text-slate-500">(${item.color})</span><div class="text-cyan-400">${item.price.toFixed(2)} €</div></div>
-                    <button onclick="cart.splice(${idx},1);updateUI();" class="text-slate-500"><i class="fa-solid fa-trash"></i></button>
+                    <span class="text-slate-200">${item.title}</span>
+                    <span class="text-cyan-400 font-bold">${item.price.toFixed(2)} €</span>
                 </div>
             `).join('');
-            
-            const subtotal = cart.reduce((a, b) => a + b.price, 0);
-            document.getElementById('subtotal').innerText = subtotal.toFixed(2) + ' €';
-            updateShippingCost();
         }
 
-        async function startStripePayment(e) {
+        function handleLogin(e) {
             e.preventDefault();
-            if (cart.length === 0) return alert("Panier vide !");
+            const u = document.getElementById('admin-user').value;
+            const p = document.getElementById('admin-pass').value;
 
-            const response = await fetch('/api/create-checkout-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    items: cart,
-                    customerEmail: document.getElementById('cust-email').value,
-                    customerName: document.getElementById('cust-name').value,
-                    address: document.getElementById('cust-address').value,
-                    country: document.getElementById('cust-country').value,
-                    carrier: document.getElementById('cust-carrier').value
-                })
-            });
-
-            const data = await response.json();
-            if (data.url) window.location.href = data.url;
+            if (u === 'admin' && p === 'admin123') {
+                alert('Connexion réussie ! Redirection vers le panneau d\'administration.');
+                toggleAdminModal();
+            } else {
+                alert('Identifiants incorrects.');
+            }
         }
 
         loadProducts();
